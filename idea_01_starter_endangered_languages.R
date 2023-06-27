@@ -11,10 +11,6 @@ path_languages = 'https://raw.githubusercontent.com/mrbalikci/endangered-languag
 path_gdp = "https://raw.githubusercontent.com/mrbalikci/endangered-languages/master/GDP.csv"
 path_countries = "https://raw.githubusercontent.com/mrbalikci/endangered-languages/master/Countries.csv"
 
-# Read raw data files
-# raw_data_languages = read_csv(path_languages) |> janitor::clean_names()
-# raw_data_gdp = read_csv(path_gdp) |> janitor::clean_names()
-# raw_data_countries = read_csv(path_countries) |> janitor::clean_names()
 
 read_raw_data <- function(path_name){
   
@@ -24,7 +20,10 @@ read_raw_data <- function(path_name){
   print('hey')
   
   # Read data using path value
-  the_data = read_csv(path) |> janitor::clean_names()
+  the_data = read_csv(path) |> 
+    
+    # clean the column names: remove spacing and special characters
+    janitor::clean_names()
   
   # Extract suffix of path_name
   suffix = unlist(strsplit(path_name, "_"))[2]
@@ -42,6 +41,7 @@ read_raw_data <- function(path_name){
 all_path_names = ls()[grep("^path_", ls())]
 
 
+# Read all data and assign to global environment
 walk(all_path_names, read_raw_data)
 
 
