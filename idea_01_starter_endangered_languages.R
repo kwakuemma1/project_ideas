@@ -17,7 +17,6 @@ read_raw_data <- function(path_name){
   # Extract path value
   path = unlist(mget(path_name, envir = .GlobalEnv))
   
-  print('hey')
   
   # Read data using path value
   the_data = read_csv(path) |> 
