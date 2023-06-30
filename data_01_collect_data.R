@@ -1,7 +1,7 @@
 #' Kwaku Adu
 #' 6/27/2023
 #' 
-#' Purpose: Scripts to clean data for the project
+#' Purpose: Scripts to read data for the project
 #' Project: Interactively visualize endangered languages
 
 library(tidyverse)
@@ -10,6 +10,7 @@ library(tidyverse)
 path_languages = 'https://raw.githubusercontent.com/mrbalikci/endangered-languages/master/data.csv'
 path_gdp = "https://raw.githubusercontent.com/mrbalikci/endangered-languages/master/GDP.csv"
 path_countries = "https://raw.githubusercontent.com/mrbalikci/endangered-languages/master/Countries.csv"
+
 
 
 read_raw_data <- function(path_name){
