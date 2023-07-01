@@ -40,7 +40,11 @@ elp_data <- elp_data %>%
     endangerment_degree = str_squish(str_replace_all(endangerment_degree, "[^A-Za-z0-9 ]", "")),
     endangerment_degree = ifelse(is.na(endangerment_degree), 'Vitality Unknown', endangerment_degree),
     endangerment_degree = ifelse(endangerment_degree == 'Dormant', 'Dormant or Extinct', endangerment_degree),
-    confidence_in_degree = as.numeric(confidence_in_degree)
+    confidence_in_degree = as.numeric(confidence_in_degree),
+    confidence_in_degree = case_when(
+      endangerment_degree == "Dormant or Extinct" ~ 100,
+      TRUE ~ confidence_in_degree
+    )
   )
 
 

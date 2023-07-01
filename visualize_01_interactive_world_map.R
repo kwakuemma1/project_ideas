@@ -30,6 +30,14 @@ library(RColorBrewer)
 source('data_02_cleaning.R')
 
 
+map_data <- elp_data %>% 
+  dplyr::select(latitude, longitude, endangerment_degree, confidence_in_degree, name_in_the_language) %>%
+  mutate(endangerment_degree = factor(endangerment_degree, levels = elp_data_order_of_severity)) %>%
+  mutate(confidence_in_degree = rescale(confidence_in_degree, to = c(5, 10))) %>%
+  # drop_na() %>%
+  I()
+
+
 elp_data_order_of_severity = c(
   "At risk",
   "Vulnerable",
@@ -41,13 +49,6 @@ elp_data_order_of_severity = c(
   "Awakening",
   "Vitality Unknown"
 )
-
-map_data <- elp_data %>% 
-  dplyr::select(latitude, longitude, endangerment_degree, confidence_in_degree, name_in_the_language) %>%
-  mutate(endangerment_degree = factor(endangerment_degree, levels = elp_data_order_of_severity)) %>%
-  mutate(confidence_in_degree = rescale(confidence_in_degree, to = c(5, 10))) %>%
-  # drop_na() %>%
-  I()
 
 color_pal <- colorFactor(
   palette = c(
@@ -62,9 +63,9 @@ color_pal <- colorFactor(
     'grey'
     
   ),
-  # "YlGnBu",
   domain = map_data$endangerment_degree
 )
+
 
 
 
@@ -107,9 +108,6 @@ title <- tags$div(
   tag.map.title, HTML("Classification of Endangered Languages across the World.<br>Size of radius represent degree of belief in classification")
 )  
 
-# title <- tags$div(
-#   HTML("Classification of Endangered Languages across the World.<br>Size of radius represent degree of belief in classification")
-# )  
 
 
 interactive_map %>%
