@@ -1,0 +1,21 @@
+---
+title: "Endangered-Languages"
+author: "Emmanuel Yeboah"
+format: html
+---
+
+
+```{r}
+fit_obj <- stan_glm(data = x, 
+                    formula = pulse ~ gender + age, 
+                    family = gaussian, 
+                    refresh = 0,
+                    seed = 9)
+
+fit_obj
+```
+
+
+
+
+
