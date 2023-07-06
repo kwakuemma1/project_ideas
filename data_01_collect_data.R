@@ -44,4 +44,6 @@ all_path_names = ls()[grep("^path_", ls())]
 # Read all data and assign to global environment
 walk(all_path_names, read_raw_data)
 
+glimpse(raw_data_languages)
+
 

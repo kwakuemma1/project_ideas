@@ -1,18 +1,185 @@
 ---
-title: "Endangered-Languages"
+title: "Endangered Languages: Predicting the degree of endangerment with country-level statistics"
 author: "Emmanuel Yeboah"
-format: html
+format: 
+  html:
+    toc: true
+    toc-location: right
+    roc-depth: 3
+    code-fold: true
+    
 ---
+
+## Load Relevant Packages
+
+```{r}
+#| message: false
+library(tidyverse) # for data manipulation
+library(rstanarm) # for stan_glm stan_polr models
+```
+
+
+## Read and clean data
+
+```{r}
+#| message: false
+
+# read the data from website into R
+raw_data_languages <- read_csv('https://raw.githubusercontent.com/mrbalikci/endangered-languages/master/data.csv') |>
+  # clean the column names: remove spacing and special characters
+  janitor::clean_names() |>
+  
+  # convert values of all character columns to lower case
+  mutate_if(is.character, tolower) |>
+  
+  # some rows have multiple countries: create new rows for such rows
+  separate_rows(countries, sep = ",") |>
+  
+  # Clean up country names: Remove anything at and after '(' symbol in the Name column
+  mutate(countries = str_replace_all(countries, "\\s*\\(.*", "")) |>
+  
+  # remove white-spaces from the values of all character columns
+  mutate_if(is.character, str_squish)
+
+
+
+raw_data_countries <- read_csv('https://raw.githubusercontent.com/mrbalikci/endangered-languages/master/Countries.csv') |>
+  # clean the column names: remove spacing and special characters
+  janitor::clean_names()  |>
+  
+  # convert values of all character columns to lower case
+  mutate_if(is.character, tolower) |>
+  
+  # remove white-spaces from the values of all character columns
+  mutate_if(is.character, str_squish)
+  
+```
 
 
 ```{r}
-fit_obj <- stan_glm(data = x, 
-                    formula = pulse ~ gender + age, 
+# to inspect dataset
+glimpse(raw_data_languages)
+```
+
+
+```{r}
+# to inspect dataset
+glimpse(raw_data_countries)
+```
+## Create final data set
+
+Join the languages data and the country-level statistics data
+
+
+```{r}
+# Combine languages data to countries data
+combined_data <- raw_data_languages |>
+  left_join(
+    raw_data_countries,
+    by = c("countries" = "name")
+  )
+
+glimpse(combined_data)
+```
+
+
+```{r}
+the_levels_of_endangerment = c("vulnerable", 
+                               "definitely endangered",
+                               "severely endangered",
+                               "critically endangered",
+                               "extinct")
+
+combined_data <- combined_data |>
+  mutate(
+    # Creating a numeric version of degree of endangerment
+    degree_of_endangerment_numeric = case_when(
+      degree_of_endangerment == "vulnerable" ~ 1,
+      degree_of_endangerment == "definitely endangered" ~ 2,
+      degree_of_endangerment == "severely endangered" ~ 3,
+      degree_of_endangerment == "critically endangered" ~ 4,
+      degree_of_endangerment == "extinct" ~ 5
+    ),
+    #creating an ordred factor version of degree of endangerment 
+    degree_of_endangerment_factor = factor(degree_of_endangerment,
+                                           levels = the_levels_of_endangerment,
+                                           ordered = TRUE)
+    
+  )
+
+glimpse(combined_data)
+```
+
+## Build Models
+
+```{r}
+covariates <- c(
+  # 'gdppc',
+  'literacy',
+  'infant_mortality',
+  'agriculture',
+  # 'population',
+  'net_migration'
+  # ,
+  # 'latitude',
+  # 'longitude',
+  # 'number_of_speakers'
+  )
+```
+
+
+
+### Model A: Predict Numeric Degree of Endangerment
+
+```{r}
+model_formula_numeric <- as.formula(
+  paste0(
+    'degree_of_endangerment_numeric ~ ', 
+    paste0(covariates, collapse = '+')
+  )
+)
+
+model_formula_numeric
+```
+
+
+
+
+```{r}
+# Predicting the degree of endangerment as a number
+model_numeric <- stan_glm(data = combined_data, 
+                    formula = model_formula_numeric, 
                     family = gaussian, 
                     refresh = 0,
                     seed = 9)
 
-fit_obj
+model_numeric
+```
+
+### Model B: Predict Probability of Degree of Endangerment
+
+
+
+```{r}
+model_formula_factor <- as.formula(
+  paste0(
+    'degree_of_endangerment_factor ~ ', 
+    paste0(covariates, collapse = '+')
+  )
+)
+
+model_formula_factor
+```
+
+```{r}
+# Predicting the PROBABILITY of endangerment of each of the degrees of endangerment
+model_factor <- stan_polr(data = combined_data, 
+                    formula = model_formula_factor, 
+                    prior = R2(0.25), prior_counts = dirichlet(1),
+                    refresh = 0,
+                    seed = 9)
+
+model_factor
 ```
 
 
