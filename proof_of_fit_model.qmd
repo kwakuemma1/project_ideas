@@ -7,7 +7,6 @@ format:
     toc-location: right
     roc-depth: 3
     code-fold: true
-    
 ---
 
 ## Load Relevant Packages
@@ -16,6 +15,7 @@ format:
 #| message: false
 library(tidyverse) # for data manipulation
 library(rstanarm) # for stan_glm stan_polr models
+library(brms)
 ```
 
 
@@ -33,7 +33,9 @@ raw_data_languages <- read_csv('https://raw.githubusercontent.com/mrbalikci/enda
   mutate_if(is.character, tolower) |>
   
   # some rows have multiple countries: create new rows for such rows
-  separate_rows(countries, sep = ",") |>
+  separate_rows(countries, country_codes_alpha_3, sep = ',') |>
+  separate_rows(iso639_3_codes, sep = ',') |>
+  distinct(id, countries, country_codes_alpha_3,iso639_3_codes, .keep_all = TRUE) |>
   
   # Clean up country names: Remove anything at and after '(' symbol in the Name column
   mutate(countries = str_replace_all(countries, "\\s*\\(.*", "")) |>
@@ -131,6 +133,13 @@ covariates <- c(
 
 ### Model A: Predict Numeric Degree of Endangerment
 
+$$
+\begin{aligned}
+\operatorname{degree\_of\_endangerment\_numeric} &= \alpha + \beta_{1}(\operatorname{literacy}) + \beta_{2}(\operatorname{infant\_mortality}) + \beta_{3}(\operatorname{agriculture})\ + \\
+&\quad \beta_{4}(\operatorname{net\_migration}) + \epsilon
+\end{aligned}
+$$
+
 ```{r}
 model_formula_numeric <- as.formula(
   paste0(
@@ -156,8 +165,32 @@ model_numeric <- stan_glm(data = combined_data,
 model_numeric
 ```
 
-### Model B: Predict Probability of Degree of Endangerment
 
+```{r}
+broom.mixed::tidy(model_numeric)
+```
+$$
+\begin{aligned}
+\operatorname{\widehat{degree\_of\_endangerment\_numeric}} &= 1.931 + 0.278(\operatorname{literacy}) + 0.008(\operatorname{infant\_mortality})\ + \\
+&\quad 0.683(\operatorname{agriculture}) + 0.044(\operatorname{net\_migration})
+\end{aligned}
+$$
+
+
+
+```{r}
+plot(model_numeric, "areas", regex_pars = c('literacy', 'agriculture'),
+     prob = 0.5, prob_outer = 0.9)
+```
+
+
+```{r}
+plot(model_numeric, "areas", regex_pars = c('infant_mortality','net_migration'),
+     prob = 0.5, prob_outer = 0.9)
+```
+
+
+### Model B: Predict Probability of Degree of Endangerment
 
 
 ```{r}
@@ -171,17 +204,76 @@ model_formula_factor <- as.formula(
 model_formula_factor
 ```
 
+$$
+\begin{aligned}
+\log\left[ \frac { P( \operatorname{vulnerable} \geq \operatorname{definitely\ endangered} ) }{ 1 - P( \operatorname{vulnerable} \geq \operatorname{definitely\ endangered} ) } \right] &= \alpha_{1} + \beta_{1}(\operatorname{literacy}) + \beta_{2}(\operatorname{infant\_mortality}) + \beta_{3}(\operatorname{agriculture})\ + \\
+&\quad \beta_{4}(\operatorname{net\_migration}) \\
+\log\left[ \frac { P( \operatorname{definitely\ endangered} \geq \operatorname{severely\ endangered} ) }{ 1 - P( \operatorname{definitely\ endangered} \geq \operatorname{severely\ endangered} ) } \right] &= \alpha_{2} + \beta_{1}(\operatorname{literacy}) + \beta_{2}(\operatorname{infant\_mortality}) + \beta_{3}(\operatorname{agriculture})\ + \\
+&\quad \beta_{4}(\operatorname{net\_migration}) \\
+\log\left[ \frac { P( \operatorname{severely\ endangered} \geq \operatorname{critically\ endangered} ) }{ 1 - P( \operatorname{severely\ endangered} \geq \operatorname{critically\ endangered} ) } \right] &= \alpha_{3} + \beta_{1}(\operatorname{literacy}) + \beta_{2}(\operatorname{infant\_mortality}) + \beta_{3}(\operatorname{agriculture})\ + \\
+&\quad \beta_{4}(\operatorname{net\_migration}) \\
+\log\left[ \frac { P( \operatorname{critically\ endangered} \geq \operatorname{extinct} ) }{ 1 - P( \operatorname{critically\ endangered} \geq \operatorname{extinct} ) } \right] &= \alpha_{4} + \beta_{1}(\operatorname{literacy}) + \beta_{2}(\operatorname{infant\_mortality}) + \beta_{3}(\operatorname{agriculture})\ + \\
+&\quad \beta_{4}(\operatorname{net\_migration})
+\end{aligned}
+$$
+
 ```{r}
 # Predicting the PROBABILITY of endangerment of each of the degrees of endangerment
 model_factor <- stan_polr(data = combined_data, 
                     formula = model_formula_factor, 
-                    prior = R2(0.25), prior_counts = dirichlet(1),
+                    method = "logistic",
+                    prior = R2(0.25),
                     refresh = 0,
                     seed = 9)
 
 model_factor
 ```
 
+
+```{r}
+broom.mixed::tidy(model_factor)
+```
+
+
+
+$$
+\begin{aligned}
+\log\left[ \frac { P( \operatorname{vulnerable} \geq \operatorname{definitely\ endangered} ) }{ 1 - P( \operatorname{vulnerable} \geq \operatorname{definitely\ endangered} ) } \right] &= -0.338 + 0.376(\operatorname{literacy}) + 0.011(\operatorname{infant\_mortality})\ + \\
+&\quad 1.063(\operatorname{agriculture}) + 0.064(\operatorname{net\_migration}) \\
+\log\left[ \frac { P( \operatorname{definitely\ endangered} \geq \operatorname{severely\ endangered} ) }{ 1 - P( \operatorname{definitely\ endangered} \geq \operatorname{severely\ endangered} ) } \right] &= 1.059 + 0.376(\operatorname{literacy}) + 0.011(\operatorname{infant\_mortality})\ + \\
+&\quad 1.063(\operatorname{agriculture}) + 0.064(\operatorname{net\_migration}) \\
+\log\left[ \frac { P( \operatorname{severely\ endangered} \geq \operatorname{critically\ endangered} ) }{ 1 - P( \operatorname{severely\ endangered} \geq \operatorname{critically\ endangered} ) } \right] &= 1.908 + 0.376(\operatorname{literacy}) + 0.011(\operatorname{infant\_mortality})\ + \\
+&\quad 1.063(\operatorname{agriculture}) + 0.064(\operatorname{net\_migration}) \\
+\log\left[ \frac { P( \operatorname{critically\ endangered} \geq \operatorname{extinct} ) }{ 1 - P( \operatorname{critically\ endangered} \geq \operatorname{extinct} ) } \right] &= 3.4412 + 0.376(\operatorname{literacy}) + 0.011(\operatorname{infant\_mortality})\ + \\
+&\quad 1.063(\operatorname{agriculture}) + 0.064(\operatorname{net\_migration})
+\end{aligned}
+$$
+
+
+```{r}
+#| echo: false
+#| eval: false
+# Predicting the PROBABILITY of endangerment of each of the degrees of endangerment
+# model_factor <- stan_polr(data = combined_data, 
+#                     formula = model_formula_factor, 
+#                     method = "probit",
+#                     prior = R2(0.25), #prior_counts = dirichlet(1),
+#                     refresh = 0,
+#                     seed = 9)
+```
+
+
+
+```{r}
+plot(model_factor, "areas", regex_pars = c('literacy', 'agriculture'),
+     prob = 0.5, prob_outer = 0.9)
+```
+
+
+```{r}
+plot(model_factor, "areas", regex_pars = c('infant_mortality','net_migration'),
+     prob = 0.5, prob_outer = 0.9)
+```
 
 
 

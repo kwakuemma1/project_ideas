@@ -95,3 +95,4 @@ elp_data_order_of_severity = c(
   "Vitality Unknown"
 )
   
+library(equatiomatic)
