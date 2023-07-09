@@ -1,0 +1,43 @@
+---
+title: "Analysis"
+format: html
+---
+
+## What is the total number of languages? How many are Endangered? 
+
+According to the World Economic Forum there are approximately 7,000 known living languages. One-third of these languages are African and most of the world speaks one of 20 languages. Two-fifths of the world’s languages are positioned to die out.
+
+Not all endangered languages are at equal risk of dying out. Here is UNESCO’s classification system which shows how vulnerable a language is:
+
+| Classification | Explanation |
+|----------------|-------------|
+| Vulnerable     | Most children speak the language, but it may be restricted to certain domains                           (e.g., home). |
+| Definitely Endangered | Children no longer learn the language as a 'mother tongue' in the home. |                
+| Severely Endangered | Language is spoken by grandparents and older generations; while the parent                               generation may understand it, they do not speak it to children or among                                  themselves. |         
+| Critically Endangered | The youngest speakers are grandparents and older, and they speak the language                            partially and infrequently. |            
+| Extinct        | There are no speakers left. |
+
+
+
+## World Record For Endangered Languages
+
+If measured relative to population, Australia holds the world record for endangered languages. Over 300 Native languages were spoken around the country before European settlers arrived. One-third of those have died out, and according to linguists experts the remaining two-thirds are critically endangered. Just one dozen of the original 300 are still being taught to children.
+
+![](article_files/images/Capture.JPG) 
+[Image Source](https://www.pexels.com/photo/toy-ships-and-flags-on-australia-map-8828443/) 
+
+
+## Endangered Languages and risk Factors
+
+A brand new paper, published by researchers at Australian National University, found that 1,500 of the world’s endangered languages are at risk of disappearing by the end of the century. Some factors contributing to these languages’ extinction surprised the researchers. For example, the road density in certain countries:
+
+“We found that the more roads there are, connecting country to city, and villages to towns, the higher the risk of languages being endangered. It's as if roads are helping dominant languages 'steam roll' over other smaller languages.”
+
+Another factor contributing to the extinction was years of schooling, showing that language endangerment increased as kids moved through the education system. The researchers interpreted this as “evidence that formal education can contribute to loss of language diversity,” highlighting the importance of offering bilingual courses to offset the dominance of the main languages taught.
+
+
+
+**Works Cited:**
+Briggs, Saga. “Endangered Languages: What Are They & How to Save Them.” Berlitz, 22 January 2022, [URL](https://www.berlitz.com/blog/endangered-languages). Accessed 8 July 2023.
+
+
